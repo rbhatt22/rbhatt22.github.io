@@ -1,2 +1,4 @@
 # rbhatt22.github.io
-Rutvij's Site
+The profile home page of Rutvij Bhatt.
+
+

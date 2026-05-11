@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Baby feeding schedule tracker for nursing and bottle feeds." />
+    <meta name="author" content="Rutvij Bhatt" />
+    <title>Baby Feeding Tracker</title>
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico" />
+    <script src="https://use.fontawesome.com/releases/v5.13.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Fraunces:600,700|Mulish:400,500,700,800&display=swap" rel="stylesheet" type="text/css" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body class="tracker-body">
+<main class="tracker-shell">
+    <section class="hero-panel">
+        <p class="eyebrow">Daily baby care</p>
+        <h1>Feeding schedule, side duration, and bottle amount in one place.</h1>
+        <p class="hero-copy">
+            Track nursing sessions, bottle feeds, or mixed feeds with the exact time, who logged it, how long the baby fed on each side, and how many ml were taken by bottle.
+        </p>
+        <div class="hero-highlights">
+            <div class="highlight-card">
+                <span class="highlight-label">Designed for</span>
+                <strong>Mom or dad</strong>
+            </div>
+            <div class="highlight-card">
+                <span class="highlight-label">Storage</span>
+                <strong>Repo JSON file</strong>
+            </div>
+            <div class="highlight-card">
+                <span class="highlight-label">Use case</span>
+                <strong>Quick daily logging</strong>
+            </div>
+        </div>
+        <div class="hero-note">
+            This page loads feed data from a JSON file in this repo and can save back to that same file through the GitHub API.
+        </div>
+    </section>
+
+    <section class="app-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Repo sync</p>
+                <h2>Load and save the file</h2>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline-primary tracker-button" id="loadRepoButton" type="button">Load from repo</button>
+                <button class="btn btn-primary tracker-button tracker-button-primary" id="saveRepoButton" type="button">Save to repo</button>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <label class="field">
+                <span>GitHub token</span>
+                <input id="githubToken" name="githubToken" type="password" autocomplete="off" placeholder="Fine-grained token with Contents write access" />
+            </label>
+        </div>
+
+        <p class="sync-copy">
+            The token is stored only in this browser. Use a fine-grained GitHub token with repository `Contents: Read and write` permission for `rbhatt22/rbhatt22.github.io`.
+        </p>
+        <p class="sync-status" id="syncStatus">Ready to load feed-log.json from the repo.</p>
+    </section>
+
+    <section class="app-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">New entry</p>
+                <h2>Add a feed</h2>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline-primary tracker-button" id="exportCsvButton" type="button">Export CSV</button>
+                <button class="btn btn-outline-danger tracker-button" id="clearAllButton" type="button">Clear all</button>
+            </div>
+        </div>
+
+        <form id="feedForm" class="feed-form">
+            <div class="form-grid">
+                <label class="field">
+                    <span>Logged by</span>
+                    <select id="loggedBy" name="loggedBy">
+                        <option value="Mom">Mom</option>
+                        <option value="Dad">Dad</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Feed type</span>
+                    <select id="feedType" name="feedType">
+                        <option value="nursing">Breastfeeding</option>
+                        <option value="bottle">Bottle</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Date and time</span>
+                    <input id="feedTime" name="feedTime" type="datetime-local" required />
+                </label>
+
+                <label class="field">
+                    <span>Notes</span>
+                    <input id="notes" name="notes" type="text" maxlength="120" placeholder="Optional note" />
+                </label>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card" id="nursingCard">
+                    <div class="detail-header">
+                        <h3>Nursing details</h3>
+                        <p>Log time on each side in minutes.</p>
+                    </div>
+                    <div class="form-grid detail-fields">
+                        <label class="field">
+                            <span>Left side (min)</span>
+                            <input id="leftMinutes" name="leftMinutes" type="number" min="0" max="120" step="1" value="0" />
+                        </label>
+                        <label class="field">
+                            <span>Right side (min)</span>
+                            <input id="rightMinutes" name="rightMinutes" type="number" min="0" max="120" step="1" value="0" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="detail-card" id="bottleCard">
+                    <div class="detail-header">
+                        <h3>Bottle details</h3>
+                        <p>Use ml when the baby was bottle fed.</p>
+                    </div>
+                    <div class="form-grid detail-fields">
+                        <label class="field">
+                            <span>Bottle amount (ml)</span>
+                            <input id="bottleMl" name="bottleMl" type="number" min="0" max="1000" step="1" value="0" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary tracker-button tracker-button-primary" type="submit">Save feed</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="stats-grid" aria-label="Today summary">
+        <article class="stat-card">
+            <span class="stat-label">Feeds today</span>
+            <strong class="stat-value" id="feedsToday">0</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Nursing minutes</span>
+            <strong class="stat-value" id="nursingMinutesToday">0</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Bottle ml</span>
+            <strong class="stat-value" id="bottleMlToday">0</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Last feed</span>
+            <strong class="stat-value stat-value-small" id="lastFeedTime">No entries</strong>
+        </article>
+    </section>
+
+    <section class="app-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">History</p>
+                <h2>Recent feeds</h2>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="feed-table">
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>By</th>
+                    <th>Type</th>
+                    <th>Left</th>
+                    <th>Right</th>
+                    <th>Bottle</th>
+                    <th>Notes</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="feedTableBody">
+                <tr>
+                    <td colspan="8" class="empty-state">No feeds logged yet.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script src="scripts.js"></script>
+</body>
+</html>
